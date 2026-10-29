@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CLIENTMANIA — a first-person voodoo-pincushion simulator</title>
+    <meta
+      name="description"
+      content="CLIENTMANIA is a first-person hack-and-slash where bad clients become felt effigies and RageLayer's fifteen procedural tools become the weapon cache. Crush the dreams. Sweep the floor. Send the invoice."
+    />
+    <meta name="theme-color" content="#07060c" />
+    <meta property="og:title" content="CLIENTMANIA — crush your clients' dreams" />
+    <meta
+      property="og:description"
+      content="A first-person voodoo-pincushion hack-and-slash powered by the RageLayer weapon cache. Fifteen tools. One Pitch Room. Zero notes."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://randyellis-wealthberry.github.io/clientmania/og.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://randyellis-wealthberry.github.io/clientmania/og.jpg" />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <canvas id="scene" aria-label="CLIENTMANIA game viewport"></canvas>
+    <div id="vfx-layer"></div>
+    <div id="grain" aria-hidden="true"></div>
+    <div id="rage-overlay" aria-hidden="true"></div>
+    <div id="damage-vignette" aria-hidden="true"></div>
+
+    <div id="hud" aria-live="polite">
+      <div class="hud-top">
+        <div class="hud-brand">
+          <span class="brand-dot"></span>
+          <span>CLIENT<em>MANIA</em></span>
+          <small>RAGE LAYER CACHE / 15</small>
+        </div>
+        <div class="hud-wave">
+          <span id="wave">WAVE 00</span>
+          <strong id="wave-title">SCOPE CREEP</strong>
+        </div>
+        <div class="hud-score">
+          <span>SCORE <b id="score">0</b></span>
+          <span class="best">BEST <b id="best">0</b></span>
+        </div>
+      </div>
+
+      <div id="crosshair" class="crosshair" aria-hidden="true">
+        <i class="ch-t"></i><i class="ch-r"></i><i class="ch-b"></i><i class="ch-l"></i><i class="ch-dot"></i>
+      </div>
+
+      <div id="combo" class="combo" aria-hidden="true"></div>
+      <div id="killfeed" class="killfeed" aria-hidden="true"></div>
+      <div id="banner" class="banner" aria-hidden="true"></div>
+      <div id="sticky-count" class="sticky-count" aria-hidden="true"></div>
+      <div id="toast" class="toast" aria-live="polite"></div>
+
+      <div class="hud-bottom">
+        <div class="vitals">
+          <div class="meter">
+            <div class="meter-label"><span>COMPOSURE</span><b id="hp-num">100</b></div>
+            <div class="track"><i id="hp-fill"></i></div>
+          </div>
+          <div class="meter rage-meter">
+            <div class="meter-label"><span>RAGE LAYER</span><b id="rage-hint">0%</b></div>
+            <div class="track"><i id="rage-fill"></i></div>
+          </div>
+        </div>
+        <div id="weapon-card" class="weapon-card">
+          <div id="w-slot" class="w-slot">01</div>
+          <div class="w-body">
+            <div id="w-name" class="w-name">HAMMER</div>
+            <div id="w-sub" class="w-sub">SHIP IT</div>
+            <div id="w-alt" class="w-alt">RMB — GROUND SLAM</div>
+          </div>
+          <div class="w-keys">1–9<br />Q / E</div>
+        </div>
+      </div>
+    </div>
+
+    <section id="menu" class="screen menu">
+      <div class="menu-inner">
+        <header class="menu-top">
+          <div class="menu-brand">
+            <span class="brand-dot"></span>
+            RAGE LAYER <span class="slash">/</span> CLIENT RELATIONS DIVISION
+          </div>
+          <div class="menu-links">
+            <button id="mute" class="ghost-btn" type="button" aria-label="Toggle sound">
+              <span id="mute-label">SOUND ON</span>
+            </button>
+            <a class="ghost-btn" href="https://www.parthjadhav.com/products/ragelayer" target="_blank" rel="noopener noreferrer">
+              RAGELAYER ↗
+            </a>
+          </div>
+        </header>
+
+        <div class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">A FIRST-PERSON VOODOO-PINCUSHION SIMULATOR</p>
+            <h1 class="title"><span>CLIENT</span><span>MANIA</span></h1>
+            <p class="tagline">We all have bad clients.<br /><em>Now they have a health bar.</em></p>
+            <p class="lede">
+              They wanted it by Friday. They wanted it to pop. They wanted one more revision. Now they're felt effigies in
+              the Pitch Room, and RageLayer's fifteen-tool cache is in your hands. Crush the dreams. Sweep the floor. Send
+              the invoice.
+            </p>
+            <div class="cta-row">
+              <button id="start" class="cta" type="button">
+                <span>ENTER THE PITCH ROOM</span>
+                <span class="cta-arrow">→</span>
+              </button>
+              <span class="cta-note">CLICK TO ACCEPT THE ENGAGEMENT<br />HEADPHONES RECOMMENDED<br /><b class="mobile-warning">DESKTOP + MOUSE REQUIRED</b></span>
+            </div>
+            <div class="controls">
+              <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><span>MOVE</span></div>
+              <div><kbd>MOUSE</kbd><span>LOOK / LMB ANNIHILATE</span></div>
+              <div><kbd>RMB</kbd><span>ALT ATTACK</span></div>
+              <div><kbd>1–9</kbd><kbd>Q</kbd><kbd>E</kbd><span>WEAPON</span></div>
+              <div><kbd>SHIFT</kbd><span>DASH</span></div>
+              <div><kbd>F</kbd><span>RAGE LAYER</span></div>
+              <div><kbd>R</kbd><span>DETONATE STICKIES</span></div>
+              <div><kbd>ESC</kbd><span>HOLD, PLEASE</span></div>
+            </div>
+          </div>
+
+          <aside class="hero-side">
+            <div class="sticker">15 TOOLS<br /><b>ZERO MERCY</b></div>
+            <div class="side-note">
+              <span class="side-kicker">THE PREMISE</span>
+              <p>
+                Every client is a felt effigy stitched from unresolved feedback. Every weapon is a real RageLayer tool.
+                The dreams are glowing. The pins are removable. The invoice is already late.
+              </p>
+            </div>
+            <div class="side-stats">
+              <div><b>15</b><span>PROCEDURAL<br />TOOLS</span></div>
+              <div><b>∞</b><span>REVISIONS<br />INBOUND</span></div>
+              <div><b>0</b><span>NOTES<br />TAKEN</span></div>
+            </div>
+            <p class="satire">Fictional, cartoonish satire. No real clients were harmed.<br />All effigies are made of felt and unresolved feedback.</p>
+          </aside>
+        </div>
+
+        <section class="cache-preview">
+          <div class="cache-head">
+            <span>THE WEAPON CACHE</span>
+            <small>15 TOOLS · CLICK ONE TO START · SCROLL ↓</small>
+          </div>
+          <div id="menu-cache" class="cache-grid menu-cache"></div>
+        </section>
+
+        <footer class="menu-foot">
+          <span>CLIENTMANIA v1.0 — A RAGE LAYER FAN PROJECT</span>
+          <span>NO CLIENTS WERE HARMED. SEVERAL WERE ARCHIVED.</span>
+          <a href="https://www.parthjadhav.com/products/ragelayer" target="_blank" rel="noopener noreferrer">BUILT ON RAGELAYER ↗</a>
+        </footer>
+      </div>
+    </section>
+
+    <section id="pause" class="screen pause hidden">
+      <div class="panel">
+        <p class="eyebrow">MEETING IN PROGRESS</p>
+        <h2 class="panel-title">HOLD,<br />PLEASE.</h2>
+        <p class="panel-sub">The client has stepped away from the call. Your progress is safe. Their dreams are not.</p>
+        <button id="resume" class="cta" type="button"><span>RESUME THE ENGAGEMENT</span><span class="cta-arrow">→</span></button>
+        <div class="pause-cache-wrap">
+          <div class="cache-head"><span>SWAP TOOL</span><small>PLAYING? USE 1–9 / Q / E</small></div>
+          <div id="pause-cache" class="cache-grid pause-cache"></div>
+        </div>
+        <p class="panel-foot">ESC / P TO RESUME · M TO MUTE · L FOR POTATO MODE</p>
+      </div>
+    </section>
+
+    <section id="gameover" class="screen gameover hidden">
+      <div class="panel go-panel">
+        <p class="eyebrow">ENGAGEMENT TERMINATED</p>
+        <h2 class="panel-title">THE CLIENT<br /><span>WON.</span></h2>
+        <p id="go-quip" class="panel-sub">The client survived. They've requested a call.</p>
+        <div class="go-stats">
+          <div><span>SCORE</span><b id="go-score">0</b></div>
+          <div><span>BEST</span><b id="go-best">0</b></div>
+          <div><span>WAVE</span><b id="go-wave">0</b></div>
+          <div><span>CLIENTS CRUSHED</span><b id="go-kills">0</b></div>
+          <div><span>BEST COMBO</span><b id="go-combo">×1.0</b></div>
+          <div><span>TIME ON CALL</span><b id="go-time">0:00</b></div>
+        </div>
+        <button id="restart" class="cta" type="button"><span>RUN IT BACK</span><span class="cta-arrow">↻</span></button>
+        <p class="panel-foot">THEY WILL REQUEST ANOTHER CALL. THEY ALWAYS DO.</p>
+      </div>
+    </section>
+
+    <div id="cache" class="cache-overlay" aria-hidden="true">
+      <div class="cache-overlay-inner">
+        <div class="cache-overlay-head">
+          <span class="eyebrow">RAGE LAYER / WEAPON CACHE</span>
+          <h2>PICK YOUR <em>TOOL</em></h2>
+          <p>HOLD <kbd>TAB</kbd> TO INSPECT · <kbd>1–9</kbd> <kbd>Q</kbd> <kbd>E</kbd> <kbd>SCROLL</kbd> TO EQUIP</p>
+        </div>
+        <div id="cache-grid" class="cache-grid full"></div>
+      </div>
+    </div>
+
+    <div id="boot" class="boot">
+      <div class="boot-mark">CLIENT<em>MANIA</em></div>
+      <div class="boot-bar"><i></i></div>
+      <p>WARMING UP THE PITCH ROOM…</p>
+    </div>
+
+    <noscript><div class="nonscript">CLIENTMANIA needs JavaScript. So does your client's website, allegedly.</div></noscript>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
