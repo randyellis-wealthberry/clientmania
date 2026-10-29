@@ -377,13 +377,14 @@ export class Arena {
     // stacks of unsent invoices near the edge
     const invoiceA = new THREE.MeshStandardMaterial({ color: 0xcfc6b4, roughness: 1 });
     const invoiceB = new THREE.MeshStandardMaterial({ color: 0xbab09c, roughness: 1 });
+    const invoiceGeo = new THREE.BoxGeometry(1.6, 0.09, 2.2);
     for (let i = 0; i < 9; i++) {
       const a = (i / 9) * TAU + 0.2;
       const r = rand(25, 28);
       const stack = new THREE.Group();
       const h = randInt(4, 12);
       for (let k = 0; k < h; k++) {
-        const box = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.09, 2.2), k % 2 ? invoiceA : invoiceB);
+        const box = new THREE.Mesh(invoiceGeo, k % 2 ? invoiceA : invoiceB);
         box.position.y = k * 0.095;
         box.rotation.y = rand(-0.12, 0.12);
         box.castShadow = true;

@@ -78,6 +78,7 @@ export class WeaponSystem {
   private activeLoop: "flame" | "water" | "chainsaw" | "laser" | null = null;
   private pending: Pending[] = [];
   private field: Field | null = null;
+  private wellStop: (() => void) | null = null;
   private swarms: Swarm[] = [];
   private active = true;
 
@@ -440,8 +441,9 @@ export class WeaponSystem {
       const hits = this.clientsInCone(3.5, 55);
       const p = this.muzzle().addScaledVector(this.aimDir(), 1.2);
       for (const { client, dir } of hits) {
-        this.world.damageClient(client, 72, p, dir, { heavy: true, color: COLORS.acid, big: true });
-        this.world.effects.spark(client.position.clone().setY(1.2), COLORS.paper, 10, { speed: 4, spread: 1, up: 1 });
+        const chest = client.position.clone().setY(1.2);
+        this.world.damageClient(client, 72, chest, dir, { heavy: true, color: COLORS.acid, big: true });
+        this.world.effects.spark(chest, COLORS.paper, 10, { speed: 4, spread: 1, up: 1 });
       }
       this.world.audio.hammer();
       this.world.shake(0.8);
@@ -612,7 +614,7 @@ export class WeaponSystem {
     if (hit.client) center.copy(hit.client.position).setY(1.1);
     if (center.y < 1) center.y = 1.1;
     this.field = { center, life: 2.7, tick: 0 };
-    this.world.effects.well(center, COLORS.violet, 2.7);
+    this.wellStop = this.world.effects.well(center, COLORS.violet, 2.7);
     this.world.audio.whoosh();
     this.world.audio.zap();
     this.world.shake(0.6);
@@ -653,6 +655,8 @@ export class WeaponSystem {
     const f = this.field;
     if (!f) return;
     this.field = null;
+    this.wellStop?.();
+    this.wellStop = null;
     this.explode(f.center, 6.2, 150, COLORS.violet, true);
     this.world.effects.ring(f.center, COLORS.magenta, 9, 0.8);
     this.world.audio.zap();
@@ -1091,6 +1095,8 @@ export class WeaponSystem {
     this.pending.length = 0;
     if (this.field) {
       this.field = null;
+      this.wellStop?.();
+      this.wellStop = null;
     }
     for (const s of this.swarms) {
       this.world.scene.remove(s.points);

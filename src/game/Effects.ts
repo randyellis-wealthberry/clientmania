@@ -403,7 +403,7 @@ export class Effects {
     this.flashScreen(0.12, color);
   }
 
-  well(pos: THREE.Vector3, color: number, life: number): void {
+  well(pos: THREE.Vector3, color: number, life: number): () => void {
     const group = new THREE.Group();
     group.position.copy(pos);
     const coreMat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false });
@@ -444,6 +444,19 @@ export class Effects {
       },
     });
     this.spark(pos, color, 40, { speed: 8, spread: 1, up: 0.4, life: 0.8, gravity: 0, drag: 1.5 });
+    let stopped = false;
+    return () => {
+      if (stopped) return;
+      stopped = true;
+      this.scene.remove(group);
+      const index = this.transients.findIndex((tr) => tr.object === group);
+      if (index >= 0) this.transients.splice(index, 1);
+      group.traverse((o) => {
+        const mesh = o as THREE.Mesh;
+        const mats = mesh.material ? (Array.isArray(mesh.material) ? mesh.material : [mesh.material]) : [];
+        for (const m of mats) m.dispose();
+      });
+    };
   }
 
   flashScreen(alpha: number, color: number = COLORS.paper): void {
